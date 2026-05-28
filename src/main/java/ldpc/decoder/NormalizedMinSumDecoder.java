@@ -1,13 +1,13 @@
 package ldpc.decoder;
 
-import ldpc.channel.BpskModem;
 import ldpc.matrix.CsrMatrix;
 
 import java.util.Arrays;
 
-public final class MinSumDecoder implements LdpcDecoder {
+public final class NormalizedMinSumDecoder implements LdpcDecoder {
     private final CsrMatrix h;
     private final int maxIterations;
+    private final float alpha;
 
     private final int[] edgeToVar;
     private final int[][] varToEdges;
@@ -16,9 +16,14 @@ public final class MinSumDecoder implements LdpcDecoder {
     private final float[] r;
     private final float[] posterior;
 
-    public MinSumDecoder(CsrMatrix h, int maxIterations) {
+    public NormalizedMinSumDecoder(CsrMatrix h, int maxIterations, float alpha) {
+        if (alpha <= 0.0f || alpha > 1.0f) {
+            throw new IllegalArgumentException("alpha must be in (0, 1]");
+        }
+
         this.h = h;
         this.maxIterations = maxIterations;
+        this.alpha = alpha;
 
         int edgeCount = h.edgeCount();
         this.edgeToVar = new int[edgeCount];
@@ -50,6 +55,7 @@ public final class MinSumDecoder implements LdpcDecoder {
         }
     }
 
+    @Override
     public DecodeResult decode(float[] channelLlr) {
         if (channelLlr.length != h.cols()) {
             throw new IllegalArgumentException("LLR length must equal matrix columns");
@@ -106,7 +112,7 @@ public final class MinSumDecoder implements LdpcDecoder {
                     }
                 }
 
-                r[target] = sign * minAbs;
+                r[target] = alpha * sign * minAbs;
             }
         }
     }
