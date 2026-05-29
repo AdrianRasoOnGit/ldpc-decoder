@@ -29,6 +29,8 @@ Below, we describe the features from this implementation, and point to a roadmap
 - LLR initialization
 - Monte Carlo BER simulation
 - BER/FER visualization pipeline
+- Alpha search for Normalized Min-Sum tuning
+- Alpha sweep visualization
 - JUnit test suite
 
 ## Planned
@@ -277,19 +279,33 @@ results/figures/ber_curve.png
 results/figures/fer_curve.png
 ```
 
+## Alpha Search Experiments
+
+The repository includes an automated alpha search utility for Normalized Min-Sum decoding. You can use it running:
+
+```bash
+mvn exec:java \
+	-Dexec.mainClass="ldpc.app.AlphaSearchRunner"
+```
+
+This evaluates multiple normalization factors and generates BER and FER measurements for each configuration. To visualize the sweep it's possible to use:
+
+```bash
+python3 tools/plot_alpha_sweep.py
+```
+
 ## Example Worflow 
 
 ```bash 
-mvn clean test 
-mvn exec:java \ 
-	-Dexec.mainClass="ldpc.app.BerRunner" \ 
-	-Dexec.args="minsum" 
-mvn exec:java \ 
-	-Dexec.mainClass="ldpc.app.BerRunner" \ 
-	-Dexec.args="normalized" 
-python3 tools/plot_ber.py \ 
-	results/ber/ber_minsum.csv \ 
-	results/ber/ber_normalized.csv
+mvn exec:java -Dexec.mainClass="ldpc.app.BerRunner" -Dexec.args="minsum"
+
+mvn exec:java -Dexec.mainClass="ldpc.app.BerRunner" -Dexec.args="normalized"
+
+mvn exec:java -Dexec.mainClass="ldpc.app.AlphaSearchRunner"
+
+python3 tools/plot_ber.py results/ber/ber_minsum.csv results/ber/ber_normalized.csv
+
+python3 tools/plot_alpha_sweep.py
 ```
 
 # Example Results
