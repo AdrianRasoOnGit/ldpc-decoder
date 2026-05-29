@@ -1,5 +1,12 @@
+# Maven artifacts
 target/
 
+# Project notes
 _notes/
 
-results/
+# Ignore generated simulation outputs
+results/*
+
+# Keep performance plots
+!results/figures/
+!results/figures/*.png

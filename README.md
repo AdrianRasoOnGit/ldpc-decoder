@@ -22,23 +22,26 @@ Below, we describe the features from this implementation, and point to a roadmap
 - CSR sparse parity-check matrix representation 
 - Tanner graph traversal
 - Min-Sum LDPC decoder
+- Normalized Min-Sum LDPC decoder
 - Syndrome validation
 - BPSK modulation
 - AWGN channel simulation
 - LLR initialization
 - Monte Carlo BER simulation
-- CSV export for BER/FER curves
+- BER/FER visualization pipeline
 - JUnit test suite
 
 ## Planned
 
-- Normalized Min-Sum
-- Offset Min-Sum
+- Offset Min-Sum decoding
 - Layered decoding
-- 5G and DVB-S2 matrices
+- Larger parity-check matrices
+- 5G NR LDPC matrices
+- DVB-S2 matrices
 - SIMD and Vector API acceleration
 - JMH benchmarking
 - Parallel Monte Carlo simulation
+- Decoder convergence analysis
 
 # Mathematical Background
 
@@ -161,18 +164,30 @@ Eb/N0 2.0 dB | BER 8.0e-3 | FER 5.0e-2
 
 ```text
 src/
-├── main/java/ldpc/
-│   ├── channel/
-│   ├── decoder/
-│   ├── matrix/
-│   ├── simulation/
-│   ├── util/
-│   └── app/
+├── main/
+│   ├── java/ldpc/
+│   │   ├── app/
+│   │   ├── channel/
+│   │   ├── decoder/
+│   │   ├── matrix/
+│   │   ├── simulation/
+│   │   └── util/
+│   │
+│   └── resources/
+│       └── matrices/
 │
 └── test/
     ├── java/
     └── resources/
+
+tools/
+└── plot_ber.py
+
+results/
+├── ber/
+└── figures/
 ```
+
 
 ---
 
@@ -280,10 +295,10 @@ python3 tools/plot_ber.py \
 # Example Results
 
 ### BER Performance
-(TBA)
+![BER Curve](results/figures/ber_curve.png)
 
 ### FER Performance
-(TBA)
+![FER Curve](results/figures/fer_curve.png)
 
 ---
 
