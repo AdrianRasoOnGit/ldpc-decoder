@@ -176,24 +176,115 @@ src/
 
 ---
 
-# Build
+# Getting Started
+
+## Requirements
 
 Requirements:
+
+### Java
 
 - Java 17
 - Maven 3+
 
-Run tests:
+### Python 
+
+- Python 3.12
+- matplotlib 3.10
+
+Create and activate the environment with:
+
+```bash
+micromamba env create -f environment.yml
+micromambda activate ldpc-decoder 
+```
+
+## Build 
+
+Compile the project with
+
+```bash 
+mvn clean compile 
+```
+
+Then it's possible to run the test suite with:
 
 ```bash
 mvn test
 ```
 
-Run BER simulation:
+## Running BER Simulations
+
+### Min-Sum Decoder
 
 ```bash
-mvn exec:java -Dexec.mainClass="ldpc.app.BerRunner"
+mvn exec:java \ 
+	-Dexec.mainClass="ldpc.app.BerRunner" \ 
+	-Dexec.args="minsum"
 ```
+
+Expected output:
+
+```bash 
+results/ber/ber_minsum.csv
+```
+
+### Normalized Min-Sum Decoder
+
+```bash
+mvn exec:java \
+	-Dexec.mainClass="ldpc.app.BerRunner" \
+	-Dexec.args="normalized"
+```
+
+Expected output:
+
+```bash
+results/ber/ber_normalized.csv
+```
+
+Each simulation generates BER (Bit Error Rate) and FER (Frame Error Rate) measurements over a range of Eb/N0 operating points.
+
+## Generating BER and FER plots
+
+Once simulation results have been generated, create performance plots with 
+
+```python
+python3 tools/plot_ber.py \
+	results/ber/ber_minsum.csv \
+	results/bet/ber_normalized.csv 
+```
+
+Expected output:
+
+```bash 
+results/figures/ber_curve.png
+results/figures/fer_curve.png
+```
+
+## Example Worflow 
+
+```bash 
+mvn clean test 
+mvn exec:java \ 
+	-Dexec.mainClass="ldpc.app.BerRunner" \ 
+	-Dexec.args="minsum" 
+mvn exec:java \ 
+	-Dexec.mainClass="ldpc.app.BerRunner" \ 
+	-Dexec.args="normalized" 
+python3 tools/plot_ber.py \ 
+	results/ber/ber_minsum.csv \ 
+	results/ber/ber_normalized.csv
+```
+
+# Example Results
+
+### BER Performance
+(TBA)
+
+### FER Performance
+(TBA)
+
 ---
 
 # References
