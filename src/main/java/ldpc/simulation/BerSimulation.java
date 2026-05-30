@@ -57,6 +57,8 @@ public final class BerSimulation {
         long bitErrors = 0;
         long frameErrors = 0;
         long totalBits = 0;
+        long successfulDecodes = 0;
+        long totalIterations = 0;
 
         for (int trial = 0; trial < config.trialsPerPoint(); trial++) {
             float[] received = channel.transmit(symbols, sigma);
@@ -68,6 +70,11 @@ public final class BerSimulation {
 
             bitErrors += frameBitErrors;
             totalBits += n;
+            totalIterations += result.iterations();
+
+            if (result.success()) {
+                successfulDecodes++;
+            }
 
             if (frameBitErrors > 0) {
                 frameErrors++;
@@ -79,7 +86,9 @@ public final class BerSimulation {
                 config.trialsPerPoint(),
                 totalBits,
                 bitErrors,
-                frameErrors
+                frameErrors,
+                successfulDecodes,
+                totalIterations
         );
     }
 

@@ -8,28 +8,51 @@ import java.nio.file.Path;
 import java.util.List;
 
 public final class CsvWriter {
+
     private CsvWriter() {}
 
-    public static void writeBerResults(Path path, List<SimulationResult> results) throws IOException {
-        Path parent = path.getParent();
+    public static void writeBerResults(
+            Path output,
+            List<SimulationResult> results
+    ) throws IOException {
 
-        if (parent != null) {
-            Files.createDirectories(parent);
-        }
+        Files.createDirectories(output.getParent());
 
         StringBuilder sb = new StringBuilder();
-        sb.append("ebN0Db,trials,totalBits,bitErrors,frameErrors,ber,fer\n");
+
+        sb.append(
+                "ebN0Db,"
+                        + "trials,"
+                        + "totalBits,"
+                        + "bitErrors,"
+                        + "frameErrors,"
+                        + "successfulDecodes,"
+                        + "totalIterations,"
+                        + "ber,"
+                        + "fer,"
+                        + "successRate,"
+                        + "avgIterations\n"
+        );
 
         for (SimulationResult result : results) {
+
             sb.append(result.ebN0Db()).append(',')
                     .append(result.trials()).append(',')
                     .append(result.totalBits()).append(',')
                     .append(result.bitErrors()).append(',')
                     .append(result.frameErrors()).append(',')
+                    .append(result.successfulDecodes()).append(',')
+                    .append(result.totalIterations()).append(',')
                     .append(result.ber()).append(',')
-                    .append(result.fer()).append('\n');
+                    .append(result.fer()).append(',')
+                    .append(result.successRate()).append(',')
+                    .append(result.averageIterations())
+                    .append('\n');
         }
 
-        Files.writeString(path, sb.toString());
+        Files.writeString(
+                output,
+                sb.toString()
+        );
     }
 }
