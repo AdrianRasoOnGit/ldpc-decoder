@@ -2,6 +2,7 @@ package ldpc.app;
 
 import ldpc.decoder.MinSumDecoder;
 import ldpc.decoder.NormalizedMinSumDecoder;
+import ldpc.decoder.OffsetMinSumDecoder;
 import ldpc.matrix.CsrMatrix;
 import ldpc.matrix.HMatrixLoader;
 import ldpc.simulation.BerSimulation;
@@ -14,20 +15,21 @@ import java.nio.file.Path;
 import java.util.List;
 
 public final class BerRunner {
+    private static final String MATRIX_RESOURCE = "/matrices/toy/h_3x6.txt";
+
+    private BerRunner() {}
 
     public static void main(String[] args) throws Exception {
-
         String decoderName =
                 args.length > 0 ? args[0].toLowerCase() : "normalized";
 
-        CsrMatrix h =
-                HMatrixLoader.loadResource("/matrices/toy/h_3x6.txt");
+        CsrMatrix h = HMatrixLoader.loadResource(MATRIX_RESOURCE);
 
         SimulationConfig config = new SimulationConfig(
                 0.5,
-                1000,
+                10_000,
                 20,
-                new double[]{0.0, 1.0, 2.0, 3.0, 4.0},
+                new double[] {0.0, 1.0, 2.0, 3.0, 4.0},
                 1234L
         );
 
@@ -58,9 +60,7 @@ public final class BerRunner {
     }
 
     private static DecoderFactory createFactory(String decoderName) {
-
         return switch (decoderName) {
-
             case "minsum" ->
                     MinSumDecoder::new;
 
@@ -74,11 +74,22 @@ public final class BerRunner {
                                     0.75f
                             );
 
+            case "offset",
+                 "offset-minsum",
+                 "oms" ->
+                    (h, maxIterations) ->
+                            new OffsetMinSumDecoder(
+                                    h,
+                                    maxIterations,
+                                    0.25f
+                            );
+
             default ->
                     throw new IllegalArgumentException(
                             "Unknown decoder: "
                                     + decoderName
-                                    + " (use minsum or normalized)"
+                                    + ". Use: minsum, normalized, normalized-minsum, "
+                                    + "nms, offset, offset-minsum, or oms."
                     );
         };
     }

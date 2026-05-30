@@ -23,6 +23,7 @@ Below, we describe the features from this implementation, and point to a roadmap
 - Tanner graph traversal
 - Min-Sum LDPC decoder
 - Normalized Min-Sum LDPC decoder
+- Offset Min-Sum decoding
 - Syndrome validation
 - BPSK modulation
 - AWGN channel simulation
@@ -35,7 +36,6 @@ Below, we describe the features from this implementation, and point to a roadmap
 
 ## Planned
 
-- Offset Min-Sum decoding
 - Layered decoding
 - Larger parity-check matrices
 - 5G NR LDPC matrices
