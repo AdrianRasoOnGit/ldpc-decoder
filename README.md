@@ -1,5 +1,10 @@
 # Java LDPC Decoder
 
+![Java](https://img.shields.io/badge/Java-17-orange)
+![Maven](https://img.shields.io/badge/build-Maven-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
+
 The present repo implements a LDPC (Low-Density Parity-Check) decoder implementation in Java using iterative Belief Propagation algorithms over sparse Tanner graphs.
 
 At its core, the decoder attempts to solve a deceptively difficult problem. This consists of the following: a message is transmitted through a noisy physical channel, with each bit being corrupted by random noise. The question is, can the original information still be reconstructed? Surprisingly, the answer is yes. 
@@ -32,6 +37,8 @@ Below, we describe the features from this implementation, and point to a roadmap
 - BER/FER visualization pipeline
 - Alpha search for Normalized Min-Sum tuning
 - Alpha sweep visualization
+- Runtime matrix selection
+- Regular LDPC generation
 - JUnit test suite
 
 ## Planned

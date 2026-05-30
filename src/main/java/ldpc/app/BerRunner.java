@@ -5,6 +5,7 @@ import ldpc.decoder.NormalizedMinSumDecoder;
 import ldpc.decoder.OffsetMinSumDecoder;
 import ldpc.matrix.CsrMatrix;
 import ldpc.matrix.HMatrixLoader;
+import ldpc.matrix.RegularLdpcMatrixFactory;
 import ldpc.simulation.BerSimulation;
 import ldpc.simulation.DecoderFactory;
 import ldpc.simulation.SimulationConfig;
@@ -15,7 +16,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 public final class BerRunner {
-    private static final String MATRIX_RESOURCE = "/matrices/toy/h_3x6.txt";
+    private static final String TOY_MATRIX_RESOURCE = "/matrices/toy/h_3x6.txt";
 
     private BerRunner() {}
 
@@ -23,12 +24,17 @@ public final class BerRunner {
         String decoderName =
                 args.length > 0 ? args[0].toLowerCase() : "normalized";
 
-        CsrMatrix h = HMatrixLoader.loadResource(MATRIX_RESOURCE);
+        String matrixName =
+                args.length > 1 ? args[1].toLowerCase() : "toy";
+
+        CsrMatrix h = loadMatrix(matrixName);
+
+        double codeRate = estimateCodeRate(h);
 
         SimulationConfig config = new SimulationConfig(
-                0.5,
+                codeRate,
                 10_000,
-                20,
+                30,
                 new double[] {0.0, 1.0, 2.0, 3.0, 4.0},
                 1234L
         );
@@ -41,11 +47,16 @@ public final class BerRunner {
         List<SimulationResult> results = simulation.run();
 
         Path output =
-                Path.of("results/ber/ber_" + decoderName + ".csv");
+                Path.of("results/ber/ber_" + decoderName + "_" + matrixName + ".csv");
 
         CsvWriter.writeBerResults(output, results);
 
         System.out.println("Decoder: " + decoderName);
+        System.out.println("Matrix: " + matrixName);
+        System.out.println("Rows: " + h.rows());
+        System.out.println("Cols: " + h.cols());
+        System.out.println("Edges: " + h.edgeCount());
+        System.out.printf("Estimated rate: %.4f%n", codeRate);
 
         for (SimulationResult result : results) {
             System.out.printf(
@@ -57,6 +68,33 @@ public final class BerRunner {
         }
 
         System.out.println("Wrote " + output);
+    }
+
+    private static CsrMatrix loadMatrix(String matrixName) throws Exception {
+        return switch (matrixName) {
+            case "toy" ->
+                    HMatrixLoader.loadResource(TOY_MATRIX_RESOURCE);
+
+            case "gallager", "regular", "regular-96" ->
+                    RegularLdpcMatrixFactory.create(48, 96, 3);
+
+            case "regular-504" ->
+                    RegularLdpcMatrixFactory.create(252, 504, 3);
+
+            default ->
+                    throw new IllegalArgumentException(
+                            "Unknown matrix: "
+                                    + matrixName
+                                    + ". Use: toy, gallager, regular, regular-96, or regular-504."
+                    );
+        };
+    }
+
+    private static double estimateCodeRate(CsrMatrix h) {
+        return Math.max(
+                1e-6,
+                (double) (h.cols() - h.rows()) / h.cols()
+        );
     }
 
     private static DecoderFactory createFactory(String decoderName) {
