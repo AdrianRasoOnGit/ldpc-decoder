@@ -35,10 +35,14 @@ Below, we describe the features from this implementation, and point to a roadmap
 - LLR initialization
 - Monte Carlo BER simulation
 - BER/FER visualization pipeline
+- Decoder convergence statistics
+- Success-rate analysis
 - Alpha search for Normalized Min-Sum tuning
 - Alpha sweep visualization
 - Runtime matrix selection
-- Regular LDPC generation
+- Regular LDPC matrix generation
+- 48×96 regular LDPC experiments
+- Decoder comparison framework
 - JUnit test suite
 
 ## Planned
@@ -50,7 +54,6 @@ Below, we describe the features from this implementation, and point to a roadmap
 - SIMD and Vector API acceleration
 - JMH benchmarking
 - Parallel Monte Carlo simulation
-- Decoder convergence analysis
 
 # Mathematical Background
 
@@ -322,6 +325,35 @@ python3 tools/plot_alpha_sweep.py
 
 ### FER Performance
 ![FER Curve](results/figures/fer_curve.png)
+
+### Success Rate of Decoders
+![Success Rate Curve](results/figures/success_rate_curve.png)
+
+### Average Iterations Curve
+![Average Iterations Curve](results/figures/avg_iterations_curve.png)
+
+# Decoder Comparison
+
+
+The repository currently supports three decoder variants:
+
+| Decoder            | Description                                            |
+| ------------------ | ------------------------------------------------------ |
+| Min-Sum            | Classical minimum-magnitude approximation              |
+| Normalized Min-Sum | Scales check-node messages by a factor α               |
+| Offset Min-Sum     | Applies a correction offset β to reduce overconfidence |
+
+Experiments on a regular 48×96 LDPC matrix show that Min-Sum corrections become increasingly important as graph size grows.
+
+Example BER at 4 dB:
+
+| Decoder            | BER     |
+| ------------------ | ------- |
+| Min-Sum            | 1.89e-2 |
+| Offset Min-Sum     | 1.67e-2 |
+| Normalized Min-Sum | 1.64e-2 |
+
+This illustrates a common observation in coding theory: improvements that are almost invisible on toy Tanner graphs become measurable on larger sparse codes.
 
 ---
 
