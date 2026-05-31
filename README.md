@@ -332,28 +332,15 @@ python3 tools/plot_alpha_sweep.py
 ### Average Iterations Curve
 ![Average Iterations Curve](results/figures/avg_iterations_curve.png)
 
-# Decoder Comparison
+# Decoder Comparison (48x96 Regular LDPC)
 
 
-The repository currently supports three decoder variants:
-
-| Decoder            | Description                                            |
-| ------------------ | ------------------------------------------------------ |
-| Min-Sum            | Classical minimum-magnitude approximation              |
-| Normalized Min-Sum | Scales check-node messages by a factor α               |
-| Offset Min-Sum     | Applies a correction offset β to reduce overconfidence |
-
-Experiments on a regular 48×96 LDPC matrix show that Min-Sum corrections become increasingly important as graph size grows.
-
-Example BER at 4 dB:
-
-| Decoder            | BER     |
-| ------------------ | ------- |
-| Min-Sum            | 1.89e-2 |
-| Offset Min-Sum     | 1.67e-2 |
-| Normalized Min-Sum | 1.64e-2 |
-
-This illustrates a common observation in coding theory: improvements that are almost invisible on toy Tanner graphs become measurable on larger sparse codes.
+| Decoder | BER @ 4 dB | FER @ 4 dB | AvgIter |
+|----------|----------:|----------:|----------:|
+| Min-Sum | 1.89e-2 | 5.89e-1 | 11.80 |
+| Normalized Min-Sum | 1.64e-2 | 5.72e-1 | 10.62 |
+| Offset Min-Sum | 1.67e-2 | 5.76e-1 | 10.79 |
+| Layered Min-Sum | 1.46e-2 | 5.05e-1 | 4.29 |
 
 ---
 

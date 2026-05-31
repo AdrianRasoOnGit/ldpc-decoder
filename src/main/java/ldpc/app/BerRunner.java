@@ -1,5 +1,6 @@
 package ldpc.app;
 
+import ldpc.decoder.LayeredMinSumDecoder;
 import ldpc.decoder.MinSumDecoder;
 import ldpc.decoder.NormalizedMinSumDecoder;
 import ldpc.decoder.OffsetMinSumDecoder;
@@ -155,6 +156,7 @@ public final class BerRunner {
                     throw new IllegalArgumentException(
                             "Unknown matrix: "
                                     + matrixName
+                                    + ". Use: toy, gallager, regular, regular-96, or regular-504."
                     );
         };
     }
@@ -199,10 +201,23 @@ public final class BerRunner {
                                     0.25f
                             );
 
+            case "layered",
+                 "layered-minsum",
+                 "lms" ->
+                    (h, maxIterations) ->
+                            new LayeredMinSumDecoder(
+                                    h,
+                                    maxIterations,
+                                    0.75f
+                            );
+
             default ->
                     throw new IllegalArgumentException(
                             "Unknown decoder: "
                                     + decoderName
+                                    + ". Use: minsum, normalized, normalized-minsum, "
+                                    + "nms, offset, offset-minsum, oms, "
+                                    + "layered, layered-minsum, or lms."
                     );
         };
     }
