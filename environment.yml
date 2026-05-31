@@ -1,4 +1,4 @@
-name: ldpce-decoder
+name: ldpc-decoder
 channels:
   - conda-forge
 dependencies:

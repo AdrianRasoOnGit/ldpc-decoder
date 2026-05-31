@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
 
-The present repo implements a LDPC (Low-Density Parity-Check) decoder implementation in Java using iterative Belief Propagation algorithms over sparse Tanner graphs.
+The present repo implements an experimental framework for Low-Density Parity-Check (LDPC) codes in Java. It includes multiple belief-propagation decoder variants, sparse Tanner graph representations, Monte Carlo simulation tools and performance-analysis utilities for studying iterative decoding over noisy communication channels.
 
 At its core, the decoder attempts to solve a deceptively difficult problem. This consists of the following: a message is transmitted through a noisy physical channel, with each bit being corrupted by random noise. The question is, can the original information still be reconstructed? Surprisingly, the answer is yes. 
 
@@ -44,10 +44,10 @@ Below, we describe the features from this implementation, and point to a roadmap
 - 48×96 regular LDPC experiments
 - Decoder comparison framework
 - JUnit test suite
+- Layered decoding
 
 ## Planned
 
-- Layered decoding
 - Larger parity-check matrices
 - 5G NR LDPC matrices
 - DVB-S2 matrices
@@ -131,6 +131,60 @@ H · x = 0 mod 2
 
 Then, if all constraints are satisfied, decoding terminates successfully.
 
+## Layered Decoding
+
+The classical implementation of Belief Propagation uses a flooding schedule. During iteration \(t\), all check-node messages are computed before any variable-node beliefs are updated.
+
+For the Normalized Min-Sum approximation, the check-node update is
+
+\[
+r_{c \rightarrow v}^{(t)}
+=
+\alpha
+\,
+\operatorname{sign}
+\!\left(
+\prod_{v' \in N(c)\setminus v}
+q_{v' \rightarrow c}^{(t-1)}
+\right)
+\,
+\min_{v' \in N(c)\setminus v}
+\left|
+q_{v' \rightarrow c}^{(t-1)}
+\right|,
+\]
+
+where \(N(c)\) denotes the set of variable nodes connected to check node \(c\).
+
+The posterior belief of variable node \(v\) is then computed as
+
+\[
+L_v^{(t)}
+=
+L_{\mathrm{ch}}(v)
++
+\sum_{c \in N(v)}
+r_{c \rightarrow v}^{(t)}.
+\]
+
+In the flooding schedule, the newly computed messages are not used until the next decoding iteration.
+
+Layered decoding modifies this procedure by processing the parity-check matrix one layer at a time. After computing a new check-node message, the corresponding posterior belief is updated immediately:
+
+\[
+L_v
+\leftarrow
+L_v
+-
+r_{c \rightarrow v}^{\mathrm{old}}
++
+r_{c \rightarrow v}^{\mathrm{new}}.
+\]
+
+This update removes the stale contribution from the previous iteration and replaces it with the newly computed message. As a consequence, information propagates through the Tanner graph more rapidly, allowing subsequent layers to operate on fresher beliefs within the same iteration.
+
+Empirically, this often leads to both faster convergence and improved decoding performance. In experiments on a regular \((48,96)\) LDPC code, Layered Min-Sum reduced the average number of decoding iterations from approximately \(11\) to \(4\), while simultaneously achieving the best BER and FER performance among the implemented decoder variants.
+
 ## AWGN Channel Model
 
 The communication channel is modeled using an Additive White Gaussian Noise (or AWGN) process:
@@ -198,6 +252,46 @@ tools/
 results/
 ├── ber/
 └── figures/
+```
+
+# Simulation Workflow
+
+The simulator evaluates LDPC decoder performance by transmitting codewords through a noisy communication channel and attempting to reconstruct them using iterative belief propagation.
+
+```text
+All-Zero Codeword
+        │
+        ▼
+ BPSK Modulation
+        │
+        ▼
+   AWGN Channel
+        │
+        ▼
+ Received Symbols
+        │
+        ▼
+ LLR Initialization
+        │
+        ▼
+  LDPC Decoder
+        │
+        ├─ Min-Sum
+        ├─ Normalized Min-Sum
+        ├─ Offset Min-Sum
+        └─ Layered Min-Sum
+        │
+        ▼
+ Decoded Codeword
+        │
+        ▼
+ Syndrome Check
+        │
+        ▼
+ BER / FER Statistics
+        │
+        ▼
+ Performance Curves
 ```
 
 
@@ -331,6 +425,17 @@ python3 tools/plot_alpha_sweep.py
 
 ### Average Iterations Curve
 ![Average Iterations Curve](results/figures/avg_iterations_curve.png)
+
+# Experimental Setup
+
+Unless otherwise noted:
+
+- Code: Regular (48,96) LDPC
+- Rate: 1/2
+- Channel: AWGN
+- Modulation: BPSK
+- Trials: 10,000 per Eb/N0 point
+- Maximum iterations: 30
 
 # Decoder Comparison (48x96 Regular LDPC)
 
