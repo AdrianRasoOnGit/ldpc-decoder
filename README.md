@@ -55,6 +55,8 @@ Below, we describe the features from this implementation, and point to a roadmap
 - JMH benchmarking
 - Parallel Monte Carlo simulation
 
+---
+
 # Mathematical Background
 
 LDPC codes are linear block codes defined by sparse parity-check matrices:
