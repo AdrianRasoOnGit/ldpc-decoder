@@ -21,6 +21,7 @@ public final class CsrMatrix {
         }
 
         int edges = 0;
+
         for (int[] row : rowColumns) {
             edges += row.length;
         }
@@ -29,15 +30,19 @@ public final class CsrMatrix {
         int[] colIdx = new int[edges];
 
         int edge = 0;
+
         for (int r = 0; r < rows; r++) {
             rowPtr[r] = edge;
+
             for (int c : rowColumns[r]) {
                 if (c < 0 || c >= cols) {
                     throw new IllegalArgumentException("Column out of bounds: " + c);
                 }
+
                 colIdx[edge++] = c;
             }
         }
+
         rowPtr[rows] = edge;
 
         return new CsrMatrix(rows, cols, rowPtr, colIdx);
@@ -73,5 +78,12 @@ public final class CsrMatrix {
 
     public int[] colIdxCopy() {
         return Arrays.copyOf(colIdx, colIdx.length);
+    }
+
+    public int[] rowColumns(int row) {
+        int start = rowStart(row);
+        int end = rowEnd(row);
+
+        return Arrays.copyOfRange(colIdx, start, end);
     }
 }
