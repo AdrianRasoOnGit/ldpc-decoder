@@ -21,6 +21,12 @@ public final class BerRunner {
     private static final String TOY_MATRIX_RESOURCE =
             "/matrices/toy/h_3x6.txt";
 
+    private static final String ALIST_TOY_MATRIX_RESOURCE =
+            "/matrices/alist/h_3x6.alist";
+
+    private static final String PEG_10000_R05_AWGN_RESOURCE =
+            "/matrices/alist/peg_10000_r05_awgn.alist";
+
     private BerRunner() {}
 
     public static void main(String[] args) throws Exception {
@@ -37,12 +43,9 @@ public final class BerRunner {
         CsrMatrix h = loadMatrix(matrixName);
         double codeRate = estimateCodeRate(h);
 
-        SimulationConfig config = new SimulationConfig(
-                codeRate,
-                10_000,
-                30,
-                new double[] {0.0, 1.0, 2.0, 3.0, 4.0},
-                1234L
+        SimulationConfig config = createConfig(
+                matrixName,
+                codeRate
         );
 
         DecoderFactory factory = createFactory(decoderName);
@@ -66,6 +69,8 @@ public final class BerRunner {
         System.out.println("Cols: " + h.cols());
         System.out.println("Edges: " + h.edgeCount());
         System.out.printf("Estimated rate: %.4f%n", codeRate);
+        System.out.println("Trials per point: " + config.trialsPerPoint());
+        System.out.println("Max iterations: " + config.maxIterations());
 
         for (SimulationResult result : results) {
             System.out.printf(
@@ -81,6 +86,32 @@ public final class BerRunner {
         System.out.println("Wrote " + output);
     }
 
+    private static SimulationConfig createConfig(
+            String matrixName,
+            double codeRate
+    ) {
+        if (matrixName.equals("peg-10000")
+                || matrixName.equals("peg-10000-r05-awgn")
+                || matrixName.equals("upm-awgn-r05-n10000")) {
+
+            return new SimulationConfig(
+                    codeRate,
+                    200,
+                    30,
+                    new double[] {0.0, 1.0, 2.0, 3.0, 4.0},
+                    1234L
+            );
+        }
+
+        return new SimulationConfig(
+                codeRate,
+                10_000,
+                30,
+                new double[] {0.0, 1.0, 2.0, 3.0, 4.0},
+                1234L
+        );
+    }
+
     private static CsrMatrix loadMatrix(String matrixName) throws Exception {
         return switch (matrixName) {
             case "toy" ->
@@ -88,7 +119,14 @@ public final class BerRunner {
 
             case "alist-toy" ->
                     AlistMatrixLoader.loadResource(
-                            "/matrices/alist/h_3x6.alist"
+                            ALIST_TOY_MATRIX_RESOURCE
+                    );
+
+            case "peg-10000",
+                 "peg-10000-r05-awgn",
+                 "upm-awgn-r05-n10000" ->
+                    AlistMatrixLoader.loadResource(
+                            PEG_10000_R05_AWGN_RESOURCE
                     );
 
             case "gallager",
@@ -103,7 +141,9 @@ public final class BerRunner {
                     throw new IllegalArgumentException(
                             "Unknown matrix: "
                                     + matrixName
-                                    + ". Use: toy, alist-toy, gallager, regular, regular-96, or regular-504."
+                                    + ". Use: toy, alist-toy, peg-10000, "
+                                    + "peg-10000-r05-awgn, upm-awgn-r05-n10000, "
+                                    + "gallager, regular, regular-96, or regular-504."
                     );
         };
     }
@@ -155,7 +195,8 @@ public final class BerRunner {
                             "Unknown decoder: "
                                     + decoderName
                                     + ". Use: minsum, normalized, normalized-minsum, "
-                                    + "nms, offset, offset-minsum, oms, layered, layered-minsum, or lms."
+                                    + "nms, offset, offset-minsum, oms, layered, "
+                                    + "layered-minsum, or lms."
                     );
         };
     }

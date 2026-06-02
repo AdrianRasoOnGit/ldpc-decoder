@@ -449,13 +449,106 @@ Unless otherwise noted:
 | Offset Min-Sum | 1.67e-2 | 5.76e-1 | 10.79 |
 | Layered Min-Sum | 1.46e-2 | 5.05e-1 | 4.29 |
 
+# PEG LDPC Code Results
+
+The repository includes as well experiments on a PEG LDPC parity-check matrix in AList format. In order to obtain this resource, we have followed both the documentation on GHG.p written by David MacKay and the already-prepared LDPC codes from the Research Group on Quantum Information and Computation from the Technical University of Madrid (both sources can be found in the ![references section](References)).
+
+
+## Matrix Characteristics
+
+| Property               | Value                         |
+| ---------------------- | ----------------------------- |
+| Construction           | Progressive Edge Growth (PEG) |
+| Format                 | AList                         |
+| Columns (N)            | 10000                         |
+| Rows (M)               | 5000                          |
+| Code Rate              | 0.5                           |
+| Edges                  | 40083                         |
+| Channel                | AWGN                          |
+| Maximum Iterations     | 30                            |
+| Trials per Eb/N0 Point | 200                           |
+
+This matrix is significantly larger than the toy and synthetic benchmark matrices used elsewhere in the repository and better reflects the behavior of practical LDPC codes.
+
+## Decoder Comparison
+
+Four decoding algorithms were evaluated:
+
+* Min-Sum
+* Normalized Min-Sum
+* Offset Min-Sum
+* Layered Min-Sum
+
+### BER Performance
+
+The Bit Error Rate (BER) results reveal a clear waterfall region between approximately 1 dB and 2 dB. Layered Min-Sum enters the waterfall region earlier than the flooding-schedule variants and achieves the lowest BER at low signal-to-noise ratios.
+
+![PEG BER Curve](results/figures/peg-10000/ber_curve.png)
+
+### FER Performance
+
+The Frame Error Rate (FER) results show the same trend. At 1 dB, Layered Min-Sum successfully decodes more than half of all frames, while the other variants still experience very high frame error rates.
+
+![PEG FER Curve](results/figures/peg-10000/fer_curve.png)
+
+### Decoder Success Rate
+
+The decoder success rate highlights the transition from unreliable decoding to near-perfect decoding.
+
+Layered Min-Sum achieves:
+
+| Eb/N0 (dB) | Success Rate |
+| ---------: | -----------: |
+|          0 |        0.000 |
+|          1 |        0.525 |
+|          2 |        0.995 |
+|          3 |        1.000 |
+|          4 |        1.000 |
+
+![PEG Success Rate Curve](results/figures/peg-10000/success_rate_curve.png)
+
+### Average Iterations
+
+Layered Min-Sum requires substantially fewer decoding iterations than the flooding-schedule variants.
+
+At 2 dB:
+
+| Decoder            | Average Iterations |
+| ------------------ | -----------------: |
+| Min-Sum            |               13.8 |
+| Normalized Min-Sum |               14.1 |
+| Offset Min-Sum     |               11.7 |
+| Layered Min-Sum    |                7.6 |
+
+This reduction in iteration count is one of the primary reasons layered schedules are widely used in practical LDPC decoders.
+
+![PEG Average Iterations](results/figures/peg-10000/avg_iterations_curve.png)
+
+## Layered Min-Sum Results
+
+| Eb/N0 (dB) |         BER |   FER | Success Rate | Avg. Iterations |
+| ---------: | ----------: | ----: | -----------: | --------------: |
+|          0 | 1.684965e-1 | 1.000 |        0.000 |           30.00 |
+|          1 | 1.698850e-2 | 0.475 |        0.525 |           25.68 |
+|          2 | 1.000000e-6 | 0.005 |        0.995 |            7.62 |
+|          3 |  0.000000e0 | 0.000 |        1.000 |            4.34 |
+|          4 |  0.000000e0 | 0.000 |        1.000 |            3.11 |
+
+## Discussion
+
+The PEG matrix exhibits the characteristic LDPC waterfall phenomenon. Decoding performance is poor at very low signal-to-noise ratios, improves rapidly around 1–2 dB, and becomes effectively error-free in this simulation above 3 dB.
+
+Among all evaluated algorithms, Layered Min-Sum provides the best overall trade-off between decoding performance and computational cost. It achieves higher success rates at low Eb/N0 values while simultaneously requiring fewer iterations to converge.
+
 ---
 
 # References
 
 - Gallager, R. G (1962). *Low-Density Parity-Check Codes*. In *IRE Transactions on Information Theory*, Volume 8, Issue 1.
-- MacKay, D (2003).  *Information Theory, Inference, and Learning Algorithms* Cambridge University Press. 
-- Richardson & Urbanke (2008). *Modern Coding Theory*. Cambridge University Press.
+- MacKay, D. J. C. (2003).  *Information Theory, Inference, and Learning Algorithms* Cambridge University Press. 
+- Richardson, T. & Urbanke, R. (2008). *Modern Coding Theory*. Cambridge University Press.
+- MacKay, D. J. C (2006). *AList Matrix Format Documentation*. https://www.inference.org.uk/mackay/codes/alist.html
+- Codification and Cryptography Group (GCC), Polytechnique University of Madrid (2016). *LDPC Codes and Matrices Database*. http://www.gcc.fi.upm.es/en/codes.html
 
 ---
 
