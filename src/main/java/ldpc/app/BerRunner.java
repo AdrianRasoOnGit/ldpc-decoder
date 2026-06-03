@@ -1,6 +1,7 @@
 package ldpc.app;
 
 import ldpc.decoder.LayeredMinSumDecoder;
+import ldpc.decoder.LayeredNormalizedMinSumDecoder;
 import ldpc.decoder.MinSumDecoder;
 import ldpc.decoder.NormalizedMinSumDecoder;
 import ldpc.decoder.OffsetMinSumDecoder;
@@ -46,25 +47,38 @@ public final class BerRunner {
         int rank = Gf2Rank.compute(h);
         double codeRate = Gf2Rank.codeRate(h);
 
-        SimulationConfig config = createConfig(
-                matrixName,
-                codeRate
+        SimulationConfig config =
+                createConfig(
+                        matrixName,
+                        codeRate
+                );
+
+        DecoderFactory factory =
+                createFactory(decoderName);
+
+        BerSimulation simulation =
+                new BerSimulation(
+                        h,
+                        config,
+                        factory
+                );
+
+        List<SimulationResult> results =
+                simulation.run();
+
+        Path output =
+                Path.of(
+                        "results/ber/ber_"
+                                + decoderName
+                                + "_"
+                                + matrixName
+                                + ".csv"
+                );
+
+        CsvWriter.writeBerResults(
+                output,
+                results
         );
-
-        DecoderFactory factory = createFactory(decoderName);
-        BerSimulation simulation = new BerSimulation(h, config, factory);
-
-        List<SimulationResult> results = simulation.run();
-
-        Path output = Path.of(
-                "results/ber/ber_"
-                        + decoderName
-                        + "_"
-                        + matrixName
-                        + ".csv"
-        );
-
-        CsvWriter.writeBerResults(output, results);
 
         System.out.println("Decoder: " + decoderName);
         System.out.println("Matrix: " + matrixName);
@@ -119,7 +133,9 @@ public final class BerRunner {
     private static CsrMatrix loadMatrix(String matrixName) throws Exception {
         return switch (matrixName) {
             case "toy" ->
-                    HMatrixLoader.loadResource(TOY_MATRIX_RESOURCE);
+                    HMatrixLoader.loadResource(
+                            TOY_MATRIX_RESOURCE
+                    );
 
             case "alist-toy" ->
                     AlistMatrixLoader.loadResource(
@@ -136,10 +152,18 @@ public final class BerRunner {
             case "gallager",
                  "regular",
                  "regular-96" ->
-                    RegularLdpcMatrixFactory.create(48, 96, 3);
+                    RegularLdpcMatrixFactory.create(
+                            48,
+                            96,
+                            3
+                    );
 
             case "regular-504" ->
-                    RegularLdpcMatrixFactory.create(252, 504, 3);
+                    RegularLdpcMatrixFactory.create(
+                            252,
+                            504,
+                            3
+                    );
 
             default ->
                     throw new IllegalArgumentException(
@@ -184,6 +208,16 @@ public final class BerRunner {
                             new LayeredMinSumDecoder(
                                     h,
                                     maxIterations,
+                                    1.0f
+                            );
+
+            case "layered-normalized",
+                 "layered-normalized-minsum",
+                 "lnms" ->
+                    (h, maxIterations) ->
+                            new LayeredNormalizedMinSumDecoder(
+                                    h,
+                                    maxIterations,
                                     0.75f
                             );
 
@@ -193,7 +227,8 @@ public final class BerRunner {
                                     + decoderName
                                     + ". Use: minsum, normalized, normalized-minsum, "
                                     + "nms, offset, offset-minsum, oms, layered, "
-                                    + "layered-minsum, or lms."
+                                    + "layered-minsum, lms, layered-normalized, "
+                                    + "layered-normalized-minsum, or lnms."
                     );
         };
     }
