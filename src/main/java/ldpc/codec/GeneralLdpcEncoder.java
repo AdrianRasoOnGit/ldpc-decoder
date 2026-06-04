@@ -66,6 +66,25 @@ public final class GeneralLdpcEncoder implements LdpcEncoder {
         return codeword;
     }
 
+    public int[] extractMessage(int[] codeword) {
+        if (codeword.length != codewordLength()) {
+            throw new IllegalArgumentException(
+                    "Expected codeword length "
+                            + codewordLength()
+                            + ", got "
+                            + codeword.length
+            );
+        }
+
+        int[] messageBits = new int[messageLength()];
+
+        for (int i = 0; i < freeColumns.length; i++) {
+            messageBits[i] = codeword[freeColumns[i]] & 1;
+        }
+
+        return messageBits;
+    }
+
     public int rank() {
         return rank;
     }
@@ -76,6 +95,10 @@ public final class GeneralLdpcEncoder implements LdpcEncoder {
 
     public int[] freeColumns() {
         return Arrays.copyOf(freeColumns, freeColumns.length);
+    }
+
+    public int[] messageColumns() {
+        return freeColumns();
     }
 
     private static boolean[][] denseCopy(CsrMatrix h) {

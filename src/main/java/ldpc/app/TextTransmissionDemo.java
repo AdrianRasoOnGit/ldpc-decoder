@@ -8,6 +8,7 @@ import ldpc.codec.LdpcEncoder;
 import ldpc.codec.SystematicToyEncoder;
 import ldpc.decoder.DecodeResult;
 import ldpc.decoder.LayeredMinSumDecoder;
+import ldpc.decoder.LayeredNormalizedMinSumDecoder;
 import ldpc.decoder.LdpcDecoder;
 import ldpc.decoder.MinSumDecoder;
 import ldpc.decoder.NormalizedMinSumDecoder;
@@ -46,7 +47,11 @@ public final class TextTransmissionDemo {
                 new SystematicToyEncoder();
 
         LdpcDecoder decoder =
-                createDecoder(decoderName, h, 20);
+                createDecoder(
+                        decoderName,
+                        h,
+                        20
+                );
 
         int[] inputBits =
                 BitPacker.stringToBits(message);
@@ -55,7 +60,7 @@ public final class TextTransmissionDemo {
                 inputBits.length;
 
         int[] paddedBits =
-                padToMultiple(
+                BitPacker.padToMultiple(
                         inputBits,
                         encoder.messageLength()
                 );
@@ -91,10 +96,16 @@ public final class TextTransmissionDemo {
                     BpskModem.modulate(codeword);
 
             float[] received =
-                    channel.transmit(symbols, sigma);
+                    channel.transmit(
+                            symbols,
+                            sigma
+                    );
 
             float[] llr =
-                    LlrInitializer.compute(received, sigma);
+                    LlrInitializer.compute(
+                            received,
+                            sigma
+                    );
 
             DecodeResult result =
                     decoder.decode(llr);
@@ -113,7 +124,8 @@ public final class TextTransmissionDemo {
                     );
 
             for (int i = 0; i < decodedMessage.length; i++) {
-                int index = start + i;
+                int index =
+                        start + i;
 
                 recoveredBits[index] =
                         decodedMessage[i];
@@ -138,6 +150,7 @@ public final class TextTransmissionDemo {
         System.out.println("Frames: " + frames);
         System.out.println("Failed frames: " + failedFrames);
         System.out.println("Bit errors: " + totalBitErrors);
+
         System.out.printf(
                 "Average iterations: %.2f%n",
                 (double) totalIterations / frames
@@ -150,17 +163,6 @@ public final class TextTransmissionDemo {
         System.out.println();
         System.out.println("Recovered:");
         System.out.println(recoveredMessage);
-    }
-
-    private static int[] padToMultiple(
-            int[] bits,
-            int blockSize
-    ) {
-        int paddedLength =
-                ((bits.length + blockSize - 1) / blockSize)
-                        * blockSize;
-
-        return Arrays.copyOf(bits, paddedLength);
     }
 
     private static LdpcDecoder createDecoder(
@@ -199,12 +201,22 @@ public final class TextTransmissionDemo {
                     new LayeredMinSumDecoder(
                             h,
                             maxIterations,
+                            1.0f
+                    );
+
+            case "layered-normalized",
+                 "layered-normalized-minsum",
+                 "lnms" ->
+                    new LayeredNormalizedMinSumDecoder(
+                            h,
+                            maxIterations,
                             0.75f
                     );
 
             default ->
                     throw new IllegalArgumentException(
-                            "Unknown decoder: " + decoderName
+                            "Unknown decoder: "
+                                    + decoderName
                     );
         };
     }

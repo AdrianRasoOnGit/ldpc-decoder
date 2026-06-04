@@ -48,7 +48,6 @@ Below, we describe the features from this implementation, and point to a roadmap
 
 ## Planned
 
-- Larger parity-check matrices
 - 5G NR LDPC matrices
 - DVB-S2 matrices
 - SIMD and Vector API acceleration
@@ -139,53 +138,37 @@ The classical implementation of Belief Propagation uses a flooding schedule. Dur
 
 For the Normalized Min-Sum approximation, the check-node update is
 
-\[
-r_{c \rightarrow v}^{(t)}
-=
-\alpha
-\,
-\operatorname{sign}
-\!\left(
-\prod_{v' \in N(c)\setminus v}
-q_{v' \rightarrow c}^{(t-1)}
-\right)
-\,
-\min_{v' \in N(c)\setminus v}
-\left|
-q_{v' \rightarrow c}^{(t-1)}
-\right|,
-\]
+```text
+r(c -> v)^t =
+    alpha
+    * sign( product q(v' -> c)^(t-1) )
+    * min |q(v' -> c)^(t-1)|
 
-where \(N(c)\) denotes the set of variable nodes connected to check node \(c\).
+for all v' in N(c) \ {v}
+```
 
-The posterior belief of variable node \(v\) is then computed as
+where `N(c)` is the set of variable nodes connected to check node `c`. The posterior belief of variable `v` is then computed as: 
 
-\[
-L_v^{(t)}
-=
-L_{\mathrm{ch}}(v)
-+
-\sum_{c \in N(v)}
-r_{c \rightarrow v}^{(t)}.
-\]
+```text
+L_v^t =
+    L_ch(v)
+    + sum r(c -> v)^t
 
-In the flooding schedule, the newly computed messages are not used until the next decoding iteration.
+for all c in N(v)
+```
 
-Layered decoding modifies this procedure by processing the parity-check matrix one layer at a time. After computing a new check-node message, the corresponding posterior belief is updated immediately:
+In the flooding schedule, the newly computed messages are not used until the next decoding iteration. Layered decoding modifies this procedure by processing the parity-check matrix one layer at a time. After computing a new check-node message, the corresponding posterior belief is updated immediately:
 
-\[
-L_v
-\leftarrow
-L_v
--
-r_{c \rightarrow v}^{\mathrm{old}}
-+
-r_{c \rightarrow v}^{\mathrm{new}}.
-\]
+```text
+L_v =
+    L_v
+    - r_old(c -> v)
+    + r_new(c -> v)
+```
 
 This update removes the stale contribution from the previous iteration and replaces it with the newly computed message. As a consequence, information propagates through the Tanner graph more rapidly, allowing subsequent layers to operate on fresher beliefs within the same iteration.
 
-Empirically, this often leads to both faster convergence and improved decoding performance. In experiments on a regular \((48,96)\) LDPC code, Layered Min-Sum reduced the average number of decoding iterations from approximately \(11\) to \(4\), while simultaneously achieving the best BER and FER performance among the implemented decoder variants.
+Empirically, this often leads to both faster convergence and improved decoding performance. In experiments on a regular (48,96) LDPC code, Layered Min-Sum reduced the average number of decoding iterations from approximately (11) to (4), while simultaneously achieving the best BER and FER performance among the implemented decoder variants.
 
 ## AWGN Channel Model
 
@@ -451,7 +434,7 @@ Unless otherwise noted:
 
 # PEG LDPC Code Results
 
-The repository includes as well experiments on a PEG LDPC parity-check matrix in AList format. In order to obtain this resource, we have followed both the documentation on GHG.p written by David MacKay and the already-prepared LDPC codes from the Research Group on Quantum Information and Computation from the Technical University of Madrid (both sources can be found in the ![references section](References)).
+The repository includes as well experiments on a PEG LDPC parity-check matrix in AList format. In order to obtain this resource, we have followed both the documentation on GHG.p written by David MacKay and the already-prepared LDPC codes from the Research Group on Quantum Information and Computation from the Technical University of Madrid (both sources can be found in the [references section](#references)).
 
 
 ## Matrix Characteristics
@@ -539,6 +522,49 @@ This reduction in iteration count is one of the primary reasons layered schedule
 The PEG matrix exhibits the characteristic LDPC waterfall phenomenon. Decoding performance is poor at very low signal-to-noise ratios, improves rapidly around 1–2 dB, and becomes effectively error-free in this simulation above 3 dB.
 
 Among all evaluated algorithms, Layered Min-Sum provides the best overall trade-off between decoding performance and computational cost. It achieves higher success rates at low Eb/N0 values while simultaneously requiring fewer iterations to converge.
+
+# Demos
+
+## Text Transmission Demo
+
+The repository includes [end-to-end file transmission examples](demo/messages) using public-domain texts. Among the current available demos, it's possible to find *The Bostonians*, by Henry James (both volumes), and *Moby-Dick*, by Herman Melville (both highly recommended beyond their role in this demo!). At the same time, there is a smoke-test text available, which is a quote from *Solaris*, by Stanislav Lem.
+
+Files are converted to bits, encoded with an LDPC code, transmitted through a simulated AWGN channel, decoded and reconstructed. The recovered files can then be compared byte-for-byte with the originals.
+
+### Example
+
+```bash
+mvn compile exec:java \
+  -Dexec.mainClass="ldpc.app.FileTransmissionDemo" \
+  -Dexec.args="demo/messages/moby_dick.txt results/transmission/recovered_moby_dick.txt lnms peg-10000 0.25"
+```
+
+Expected output:
+
+```text
+Frames: ...
+Failed frames: 0
+Bit errors: 0
+BER: 0.000000000000
+Byte-perfect recovery: true
+```
+
+Verify the reconstruction:
+
+```bash
+diff demo/messages/moby_dick.txt \
+     results/transmission/recovered_moby_dick.txt
+```
+
+A successful transmission produces no output from `diff`, indicating that the recovered file is byte-for-byte identical to the original.
+
+## Audio Transmission Demo
+
+TBA
+
+## Image Transmission Demo
+
+TBA
 
 ---
 
