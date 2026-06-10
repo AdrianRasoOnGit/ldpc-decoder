@@ -564,7 +564,26 @@ TBA
 
 ## Image Transmission Demo
 
-TBA
+The repository supports transmission of arbitrary binary files. Since images are stored as sequences of bytes, they can be transmitted through the same LDPC communication pipeline. 
+
+A public-domain photograph of a Highland cow is included as an example transmission artifact.
+
+The experiment can be conduced the following way:
+
+```bash
+mvn compile exec:java \
+	-Dexec.mainClass="ldpc.app.FileTransmissiondemo" \
+	-Dexec.args="demo/images/highland_cow.jpg results/
+```
+
+The expected results are
+
+```text
+Failed frames: 0
+Bit errors: 0
+BER: 0.000000000000
+Byte-perfect recovery: true
+```
 
 ---
 
