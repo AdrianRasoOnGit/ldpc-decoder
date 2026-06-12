@@ -1,8 +1,9 @@
 # Maven artifacts
 target/
 
-# Project notes
+# Project notes and personal tools
 _notes/
+_*.sh
 
 # Ignore generated simulation outputs
 results/*
