@@ -26,6 +26,7 @@ Below, we describe the features from this implementation, and point to a roadmap
 
 - CSR sparse parity-check matrix representation 
 - Tanner graph traversal
+- Sum-Product decoder
 - Min-Sum LDPC decoder
 - Normalized Min-Sum LDPC decoder
 - Offset Min-Sum decoding

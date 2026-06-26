@@ -5,6 +5,7 @@ import ldpc.decoder.LayeredNormalizedMinSumDecoder;
 import ldpc.decoder.MinSumDecoder;
 import ldpc.decoder.NormalizedMinSumDecoder;
 import ldpc.decoder.OffsetMinSumDecoder;
+import ldpc.decoder.SumProductDecoder;
 import ldpc.matrix.AlistMatrixLoader;
 import ldpc.matrix.CsrMatrix;
 import ldpc.matrix.Gf2Rank;
@@ -220,6 +221,12 @@ public final class BerRunner {
                                     maxIterations,
                                     0.75f
                             );
+
+            case "sum-product",
+                 "sumproduct",
+                 "spa",
+                 "bp" ->
+                    SumProductDecoder::new;
 
             default ->
                     throw new IllegalArgumentException(
