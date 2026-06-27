@@ -46,13 +46,13 @@ Below, we describe the features from this implementation, and point to a roadmap
 - Decoder comparison framework
 - JUnit test suite
 - Layered decoding
+- JMH benchmarking
 
 ## Planned
 
 - 5G NR LDPC matrices
 - DVB-S2 matrices
 - SIMD and Vector API acceleration
-- JMH benchmarking
 - Parallel Monte Carlo simulation
 
 ---
@@ -209,6 +209,41 @@ Eb/N0 0.0 dB | BER 1.2e-1 | FER 4.8e-1
 Eb/N0 1.0 dB | BER 4.1e-2 | FER 2.2e-1
 Eb/N0 2.0 dB | BER 8.0e-3 | FER 5.0e-2
 ```
+
+---
+
+## Running JMH Benchmarks
+
+The repository includes JMH microbenchmarks for comparing decoder throughput.
+
+Run:
+
+```bash
+mvn test-compile exec:java \
+    -Dexec.mainClass="org.openjdk.jmh.Main" \
+    -Dexec.classpathScope=test \
+    -Dexec.args="ldpc.benchmark.DecoderBenchmark -f 0"
+```
+
+The benchmark evaluates decoder throughput (operations per millisecond) for several decoder implementations under different channel noise levels.
+
+Current benchmarks include:
+
+- Sum-Product (SPA)
+- Min-Sum
+- Normalized Min-Sum
+- Offset Min-Sum
+- Layered Min-Sum
+- Layered Normalized Min-Sum
+
+| Decoder            | σ = 0.5 (ops/ms) |
+| ------------------ | ---------------: |
+| Layered Min-Sum    |              473 |
+| Layered Normalized |              441 |
+| Normalized Min-Sum |              180 |
+| Min-Sum            |              176 |
+| Offset Min-Sum     |              167 |
+| Sum-Product        |                8 |
 
 ---
 
@@ -593,7 +628,7 @@ Byte-perfect recovery: true
 - Gallager, R. G (1962). *Low-Density Parity-Check Codes*. In *IRE Transactions on Information Theory*, Volume 8, Issue 1.
 - MacKay, D. J. C. (2003).  *Information Theory, Inference, and Learning Algorithms* Cambridge University Press. 
 - Richardson, T. & Urbanke, R. (2008). *Modern Coding Theory*. Cambridge University Press.
-- MacKay, D. J. C (2006). *AList Matrix Format Documentation*. https://www.inference.org.uk/mackay/codes/alist.html
+- MacKay, D. J. C. (2006). *AList Matrix Format Documentation*. https://www.inference.org.uk/mackay/codes/alist.html
 - Codification and Cryptography Group (GCC), Polytechnique University of Madrid (2016). *LDPC Codes and Matrices Database*. http://www.gcc.fi.upm.es/en/codes.html
 
 ---
